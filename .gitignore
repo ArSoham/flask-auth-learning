@@ -1,0 +1,36 @@
+# --- Environment / secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.Python
+build/
+dist/
+
+# --- Virtual environments ---
+venv/
+env/
+ENV/
+.venv/
+
+# --- IDE / editor ---
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# --- Flask ---
+instance/
+.flask_session/
+
+# --- Logs ---
+*.log
+
+# --- OS junk ---
+Thumbs.db

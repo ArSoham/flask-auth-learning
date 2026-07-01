@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault — Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #10131a;
+    --surface: #181c26;
+    --surface-2: #1f2430;
+    --brass: #c9a15a;
+    --brass-hover: #e0b96d;
+    --text: #eceef3;
+    --text-dim: #8790a3;
+    --border: #262b38;
+    --error: #e2574c;
+    --success: #5fbf8b;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+  }
+
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 18% 20%, rgba(201, 161, 90, 0.07), transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(201, 161, 90, 0.05), transparent 45%);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--brass);
+    border-radius: 4px;
+    padding: 40px 36px 32px;
+    position: relative;
+  }
+
+  .mark {
+    display: block;
+    margin: 0 auto 20px;
+    width: 34px;
+    height: 34px;
+  }
+
+  .mark path, .mark circle {
+    stroke: var(--brass);
+    fill: none;
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: stroke 0.3s ease;
+  }
+
+  .mark .bolt {
+    stroke-dasharray: 60;
+    stroke-dashoffset: 60;
+    transition: stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1);
+  }
+
+  .mark.unlocked .bolt {
+    stroke-dashoffset: 0;
+    stroke: var(--success);
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 26px;
+    text-align: center;
+    margin: 0 0 4px;
+    letter-spacing: 0.01em;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+    margin: 0 0 28px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+
+  .tab {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 0 0 12px;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s ease;
+  }
+
+  .tab.active {
+    color: var(--text);
+  }
+
+  .tab.active::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 2px;
+    background: var(--brass);
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  form.hidden { display: none; }
+
+  label {
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--text-dim);
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+
+  input {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 11px 12px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  input:focus {
+    border-color: var(--brass);
+  }
+
+  input:focus-visible {
+    outline: 2px solid var(--brass);
+    outline-offset: 1px;
+  }
+
+  button[type="submit"] {
+    margin-top: 8px;
+    background: var(--brass);
+    color: #16130a;
+    border: none;
+    border-radius: 3px;
+    padding: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+  }
+
+  button[type="submit"]:hover { background: var(--brass-hover); }
+  button[type="submit"]:active { transform: scale(0.99); }
+  button[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  button[type="submit"]:focus-visible {
+    outline: 2px solid var(--brass);
+    outline-offset: 2px;
+  }
+
+  .message {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    padding: 10px 12px;
+    border-radius: 3px;
+    line-height: 1.5;
+    display: none;
+  }
+
+  .message.show { display: block; }
+  .message.error { background: rgba(226, 87, 76, 0.1); color: var(--error); border: 1px solid rgba(226, 87, 76, 0.25); }
+  .message.success { background: rgba(95, 191, 139, 0.1); color: var(--success); border: 1px solid rgba(95, 191, 139, 0.25); }
+
+  .session {
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+    text-align: center;
+  }
+
+  .session.show { display: flex; }
+
+  .session .greeting {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+  }
+
+  .session .greeting span { color: var(--brass); }
+
+  .session .meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 12px;
+    text-align: left;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  .signout {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 3px;
+    padding: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .signout:hover { border-color: var(--brass); color: var(--text); }
+
+  .api-hint {
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 24px;
+    opacity: 0.6;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mark .bolt { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="card">
+    <svg class="mark" id="mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="15" r="7"></circle>
+      <path class="bolt" d="M9 15 V30 A2 2 0 0 0 11 32 H29 A2 2 0 0 0 31 30 V15"></path>
+    </svg>
+
+    <h1>Vault</h1>
+    <p class="subtitle">/api/register &nbsp;·&nbsp; /api/login</p>
+
+    <div id="authView">
+      <div class="tabs">
+        <button class="tab active" data-tab="login" type="button">Sign in</button>
+        <button class="tab" data-tab="signup" type="button">Create account</button>
+      </div>
+
+      <div id="formMessage" class="message"></div>
+
+      <form id="loginForm">
+        <div class="field">
+          <label for="loginEmail">email</label>
+          <input type="email" id="loginEmail" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="loginPassword">password</label>
+          <input type="password" id="loginPassword" autocomplete="current-password" required>
+        </div>
+        <button type="submit" id="loginSubmit">Sign in</button>
+      </form>
+
+      <form id="signupForm" class="hidden">
+        <div class="field">
+          <label for="signupUsername">username</label>
+          <input type="text" id="signupUsername" autocomplete="username" minlength="3" required>
+        </div>
+        <div class="field">
+          <label for="signupEmail">email</label>
+          <input type="email" id="signupEmail" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="signupPassword">password &nbsp;(min. 8 characters)</label>
+          <input type="password" id="signupPassword" autocomplete="new-password" minlength="8" required>
+        </div>
+        <button type="submit" id="signupSubmit">Create account</button>
+      </form>
+    </div>
+
+    <div id="sessionView" class="session">
+      <div class="greeting">Welcome back, <span id="sessionUsername"></span></div>
+      <div class="meta" id="sessionMeta"></div>
+      <button class="signout" id="signoutBtn" type="button">Sign out</button>
+    </div>
+
+    <p class="api-hint">API_BASE = <span id="apiBaseLabel"></span></p>
+  </div>
+
+<script>
+  // ---------------------------------------------------------------------
+  // Point this at your running Flask server.
+  // ---------------------------------------------------------------------
+  const API_BASE = 'http://localhost:5000';
+  document.getElementById('apiBaseLabel').textContent = API_BASE;
+
+  // In-memory token storage. This resets on page reload by design --
+  // see the note at the bottom of this file about localStorage tradeoffs.
+  let authToken = null;
+
+  const mark = document.getElementById('mark');
+  const authView = document.getElementById('authView');
+  const sessionView = document.getElementById('sessionView');
+  const formMessage = document.getElementById('formMessage');
+  const loginForm = document.getElementById('loginForm');
+  const signupForm = document.getElementById('signupForm');
+  const tabs = document.querySelectorAll('.tab');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      clearMessage();
+      if (tab.dataset.tab === 'login') {
+        loginForm.classList.remove('hidden');
+        signupForm.classList.add('hidden');
+      } else {
+        signupForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+      }
+    });
+  });
+
+  function showMessage(text, type) {
+    formMessage.textContent = text;
+    formMessage.className = `message show ${type}`;
+  }
+
+  function clearMessage() {
+    formMessage.className = 'message';
+  }
+
+  function setLoading(button, loading, idleLabel) {
+    button.disabled = loading;
+    button.textContent = loading ? 'Working…' : idleLabel;
+  }
+
+  // -------------------------- Sign up --------------------------
+  signupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMessage();
+    const submitBtn = document.getElementById('signupSubmit');
+    setLoading(submitBtn, true, 'Create account');
+
+    const body = {
+      username: document.getElementById('signupUsername').value.trim(),
+      email: document.getElementById('signupEmail').value.trim(),
+      password: document.getElementById('signupPassword').value,
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/api/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showMessage(data.error || 'Registration failed.', 'error');
+        return;
+      }
+
+      showMessage(`Account created for ${data.user.username}. You can sign in now.`, 'success');
+      signupForm.reset();
+      document.querySelector('.tab[data-tab="login"]').click();
+      document.getElementById('loginEmail').value = body.email;
+    } catch (err) {
+      showMessage(`Could not reach the API at ${API_BASE}. Is the server running?`, 'error');
+    } finally {
+      setLoading(submitBtn, false, 'Create account');
+    }
+  });
+
+  // -------------------------- Log in --------------------------
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMessage();
+    const submitBtn = document.getElementById('loginSubmit');
+    setLoading(submitBtn, true, 'Sign in');
+
+    const body = {
+      email: document.getElementById('loginEmail').value.trim(),
+      password: document.getElementById('loginPassword').value,
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showMessage(data.error || 'Sign in failed.', 'error');
+        return;
+      }
+
+      authToken = data.token;
+      mark.classList.add('unlocked');
+      await loadProfile();
+    } catch (err) {
+      showMessage(`Could not reach the API at ${API_BASE}. Is the server running?`, 'error');
+    } finally {
+      setLoading(submitBtn, false, 'Sign in');
+    }
+  });
+
+  // -------------------------- Profile (protected route) --------------------------
+  async function loadProfile() {
+    try {
+      const res = await fetch(`${API_BASE}/api/profile`, {
+        headers: { 'Authorization': `Bearer ${authToken}` },
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showMessage(data.error || 'Session invalid.', 'error');
+        authToken = null;
+        return;
+      }
+
+      document.getElementById('sessionUsername').textContent = data.user.username;
+      document.getElementById('sessionMeta').textContent =
+        `id: ${data.user.id}\nemail: ${data.user.email}\ncreated: ${data.user.created_at}\ntoken: ${authToken.slice(0, 24)}...`;
+
+      authView.style.display = 'none';
+      sessionView.classList.add('show');
+    } catch (err) {
+      showMessage(`Could not reach the API at ${API_BASE}.`, 'error');
+    }
+  }
+
+  // -------------------------- Sign out --------------------------
+  document.getElementById('signoutBtn').addEventListener('click', () => {
+    authToken = null;
+    mark.classList.remove('unlocked');
+    sessionView.classList.remove('show');
+    authView.style.display = 'block';
+    loginForm.reset();
+    clearMessage();
+  });
+</script>
+</body>
+</html>
